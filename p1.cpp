@@ -71,7 +71,7 @@ void ejercicio_b(vector<Alumno> vec){
 int main(){
     FixedRecord file("datos1.txt");
 	vector<Alumno> vec = file.load();
-	//ejercicio_b(vec);
+	ejercicio_b(vec);
     
 	
 	return 0;
