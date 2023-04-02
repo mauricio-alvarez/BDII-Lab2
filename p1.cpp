@@ -34,11 +34,19 @@ void print(Alumno alumno){
 void readFromConsole(char buffer[], int size){
 	string temp;
 	cin >> temp;
-	for (int i=0; i<temp.size(); i++) {
+	for (int i=0; i<size+1; i++) {
 		buffer[i] = (i<temp.size())? temp[i]:' ';
 	}
 	buffer[size-1] = '\0';
 	cin.clear();
+}
+
+void write(char category[], int size, ofstream& stream){
+	for (int i=0; i<size+1; i++){
+		cout << category[i];
+		stream.put(category[i]);
+	}	
+	stream<<flush;
 }
 
 class FixedRecord{
@@ -84,13 +92,19 @@ public:
 			cout <<"Nombres: "; readFromConsole(record.nombre,11);
 			cout <<"Apellidos: "; readFromConsole(record.apellidos,20);
 			cout <<"Carrera: "; readFromConsole(record.carrera,15);
-			//outFile << record;
-			outFile << "\n";
+			//outFile << "\n";
+			outFile << record;
+			/*
 			outFile.write(record.codigo, 5);
 			outFile.write(record.nombre,11);
 			outFile.write(record.apellidos, 20);
 			outFile.write(record.carrera, 15);
-			outFile<<"\0"; outFile<<flush;
+			outFile<<"\0"; 
+
+			write(record.codigo,5,outFile);
+			write(record.nombre,11,outFile);
+			write(record.apellidos,20,outFile);
+			write(record.carrera,15,outFile);*/
 			outFile.close();
 		}
 	}
