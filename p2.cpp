@@ -18,6 +18,8 @@ struct Alumno{
 
      int ciclo;
      float mensualidad;
+
+     int nextDel = -1;
 };
 
 
@@ -26,7 +28,10 @@ class FixedRecord{
 private:
      string fileName;
 public:
-     FixedRecord(string fileName) : fileName(fileName){};
+     FixedRecord(string fileName) : fileName(fileName){
+          ofstream file(fileName, ios::trunc);
+          file.close();
+     };
      void add(Alumno alumno){
           ofstream file(fileName, ios::app | ios::binary);
           file.write((alumno.codigo), 5);
@@ -36,19 +41,22 @@ public:
 
           file.write((char *)(&alumno.ciclo), sizeof(int));
           file.write((char *)(&alumno.mensualidad), sizeof(float));
+
+          file.write((char *)(&alumno.nextDel), sizeof(int));
           file << '\n';
 
           file.close();
      }
-     vector<Alumno> load(){
+     vector<Alumno> loadAll(){
           vector<Alumno> students;
           Alumno student;
           ifstream file(fileName,std::ifstream::ate | ios::binary);
           
-          int registerSize = file.tellg()/sizeof(student);file.seekg(0, std::ios::beg);
+          int registerSize = file.tellg()/64;
+          file.seekg(0, ios::beg);
 
           for (int i = 0; i < registerSize; i++){
-               file.seekg(sizeof(student)*i, ios::beg);
+               file.seekg(sizeof(student)*i+5, ios::beg);
 
                file.read(student.codigo, sizeof(student.codigo));
                file.read(student.nombre, sizeof(student.nombre));
@@ -57,14 +65,8 @@ public:
 
                file.read((char *)&student.ciclo, sizeof(int));
                file.read((char *)&student.mensualidad, sizeof(float));
+               file.read((char *)&student.nextDel, sizeof(int));
 
-               cout<<student.codigo<<endl;
-               cout<<student.nombre<<endl;
-               cout<<(student.apellidos)<<endl;
-               cout<<student.carrera<<endl;
-
-               cout<<student.ciclo<<endl;
-               cout<<student.mensualidad<<endl;
 
                students.push_back(student);
           }          
@@ -102,6 +104,78 @@ public:
 
 
           return student;
+     }
+
+     int headerData(){
+          ifstream mak(fileName,std::ifstream::ate | ios::binary);
+          mak.seekg(0, ios::beg);
+          int aux;mak.read((char *)&aux, sizeof(int));
+          mak.close();
+          return aux;
+     }
+
+     bool _delete(int pos){
+          //Recuperamos lo que habia en el header
+          int aux = headerData();
+
+          //Escribimos la posicion del valor eliminado. 
+          fstream file(fileName, ios::binary | ios::in | ios::out);
+          file.seekp(0);
+          file.write((char *)&pos, sizeof(int));
+          
+          //Escribimos en la posicion eliminada el contenido del header
+          file.seekp(sizeof(Alumno)*pos+5+59);
+          file.write((char *)&aux, sizeof(int));
+
+          file.close();
+          cout<<headerData()<<endl;
+          return true;
+     }
+
+     void setHeader(){
+          ifstream in(fileName,std::ifstream::ate | ios::binary);
+          int registerSize = in.tellg();in.seekg(0, std::ios::beg);
+          in.close();
+          ofstream out(fileName, ios::app | ios::binary);int fisrDelete = -2;
+          out.write((char*)(&fisrDelete), sizeof(int));
+          out << '\n';
+          out.close();
+     }
+     int getTotalSize(){
+          ifstream in(fileName,std::ifstream::ate | ios::binary);
+          int registerSize = in.tellg();in.seekg(0, std::ios::beg);
+          in.close();
+          return registerSize;
+     }
+
+     vector<Alumno> load(){
+          vector<Alumno> students;
+          Alumno student;
+          ifstream file(fileName,std::ifstream::ate | ios::binary);
+          
+          int registerSize = file.tellg()/64;
+          file.seekg(0, ios::beg);
+
+          for (int i = 0; i < registerSize; i++){
+               file.seekg(sizeof(student)*i+5, ios::beg);
+
+               file.read(student.codigo, sizeof(student.codigo));
+               file.read(student.nombre, sizeof(student.nombre));
+               file.read(student.apellidos, sizeof(student.apellidos));
+               file.read(student.carrera, sizeof(student.carrera));
+
+               file.read((char *)&student.ciclo, sizeof(int));
+               file.read((char *)&student.mensualidad, sizeof(float));
+               file.read((char *)&student.nextDel, sizeof(int));
+
+               if(student.nextDel == -1){
+                    students.push_back(student);
+               }
+               
+          }          
+          file.close();
+          cout<<"Se encontro "<<students.size()<<", registros."<<endl;
+          return students;
      }
 
 
