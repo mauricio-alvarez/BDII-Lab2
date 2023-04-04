@@ -13,15 +13,15 @@ struct Alumno{
 	char carrera[15];
 };
 
-ostream& operator<<(ostream& stream, Alumno& a){
+ostream& operator<<(ostream& stream, Alumno& record){
 	stream << "\n";
-	stream << a.codigo;
-	stream << a.nombre;
-	stream << a.apellidos;
-	stream << a.carrera;
-	stream << '\0';
-	stream << flush;
-	return stream;
+	stream.write(record.codigo, 5);
+    stream.write(record.nombre,11);
+    stream.write(record.apellidos, 20);
+    stream.write(record.carrera, 15);
+    stream<<"\0";
+    stream << flush;
+    return stream;
 }
 
 void print(Alumno alumno){
@@ -60,26 +60,29 @@ public:
 	FixedRecord(string filename) {
 		inFile.open(filename);
 		outFile.open(filename,fstream::app);
-		inFile.seekg(0,inFile.end);
-		this->length = inFile.tellg();
-		inFile.seekg(0,inFile.beg);
+		
 	};
 	
 	vector<Alumno> load(){
 		vector<Alumno> alumnos;
 		if (inFile.is_open()){
+            inFile.seekg(0,inFile.end);
+    		this->length = inFile.tellg();
+    		inFile.seekg(0,inFile.beg);
             // allocate mem
             int cantity = this->length / 51;
             for (int i =0;i<cantity;i++){
                 Alumno a;
-                inFile.seekg(51*i+(2*i));
+                inFile.seekg(51*i+(2*i)-(i*1/7)*(i-6));
                 inFile.get(a.codigo,5,'\0');
+                inFile.seekg((int)inFile.tellg()+1);
                 inFile.get(a.nombre, 11,'\0');
+                inFile.seekg((int)inFile.tellg()+1);
                 inFile.get(a.apellidos,20,'\0');
+                inFile.seekg((int)inFile.tellg()+1);
                 inFile.get(a.carrera,15,'\0');    
                 alumnos.push_back(a);
-            }
-			inFile.close();			
+            }		
 		}else {	
 			cout <<"File Cant be Read" <<endl;
 		}
@@ -92,7 +95,6 @@ public:
 			cout <<"Nombres: "; readFromConsole(record.nombre,11);
 			cout <<"Apellidos: "; readFromConsole(record.apellidos,20);
 			cout <<"Carrera: "; readFromConsole(record.carrera,15);
-			//outFile << "\n";
 			outFile << record;
 			/*
 			outFile.write(record.codigo, 5);
@@ -105,13 +107,24 @@ public:
 			write(record.nombre,11,outFile);
 			write(record.apellidos,20,outFile);
 			write(record.carrera,15,outFile);*/
-			outFile.close();
 		}
 	}
 	Alumno readRecord(int pos){
-		Alumno temp;
+		Alumno temp; pos-=1;
+        inFile.seekg(51*pos+(2*pos)-(pos*1/7)*(pos-6));
+        inFile.get(temp.codigo,5,'\0');
+        inFile.seekg((int)inFile.tellg()+1);
+        inFile.get(temp.nombre, 11,'\0');
+        inFile.seekg((int)inFile.tellg()+1);
+        inFile.get(temp.apellidos,20,'\0');
+        inFile.seekg((int)inFile.tellg()+1);
+        inFile.get(temp.carrera,15,'\0');  
 		return temp;
 	}
+    ~FixedRecord(){
+        outFile.close();
+        inFile.close();
+    }
 };
 
 void ejercicio_b(vector<Alumno> vec){
@@ -122,10 +135,13 @@ void ejercicio_b(vector<Alumno> vec){
 
 int main(){
 	FixedRecord file("datos1.txt");
-	Alumno alumno;
+    Alumno alumno;
 	file.add(alumno);
 	vector<Alumno> vec = file.load();
 	ejercicio_b(vec);
-
+    cout << "Read record From pos 6"<<endl;
+    Alumno alumno1 = file.readRecord(6);
+    print(alumno1);
+    
 	return 0;
 }
