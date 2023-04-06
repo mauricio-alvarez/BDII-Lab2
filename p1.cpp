@@ -41,14 +41,6 @@ void readFromConsole(char buffer[], int size){
 	cin.clear();
 }
 
-void write(char category[], int size, ofstream& stream){
-	for (int i=0; i<size+1; i++){
-		cout << category[i];
-		stream.put(category[i]);
-	}	
-	stream<<flush;
-}
-
 class FixedRecord{
 private:
 	ifstream inFile;
@@ -96,17 +88,6 @@ public:
 			cout <<"Apellidos: "; readFromConsole(record.apellidos,20);
 			cout <<"Carrera: "; readFromConsole(record.carrera,15);
 			outFile << record;
-			/*
-			outFile.write(record.codigo, 5);
-			outFile.write(record.nombre,11);
-			outFile.write(record.apellidos, 20);
-			outFile.write(record.carrera, 15);
-			outFile<<"\0"; 
-
-			write(record.codigo,5,outFile);
-			write(record.nombre,11,outFile);
-			write(record.apellidos,20,outFile);
-			write(record.carrera,15,outFile);*/
 		}
 	}
 	Alumno readRecord(int pos){
@@ -127,21 +108,45 @@ public:
     }
 };
 
-void ejercicio_b(vector<Alumno> vec){
-    for (auto alumno: vec){
-		print(alumno);
-	};
-}
 
 int main(){
 	FixedRecord file("datos1.txt");
-    Alumno alumno;
-	file.add(alumno);
-	vector<Alumno> vec = file.load();
-	ejercicio_b(vec);
-    cout << "Read record From pos 6"<<endl;
-    Alumno alumno1 = file.readRecord(6);
-    print(alumno1);
+    cout << "--------Menu Pregunta 1---------"<<endl;
+    int opc;
+    do{
+        cout <<"1. Leer todos los registros del archivo"<<endl;
+        cout <<"2. Agregar un nuevo registro"<<endl;
+        cout <<"3. Elegir posicion de un registro para leer"<<endl;
+        cout <<"4. Salir"<<endl;
+        
+        cout<< "Escoja una opción: "<<endl;
+        cin >> opc;
+
+        switch(opc){
+            case 1: {
+                vector<Alumno> vec = file.load();
+	            for (auto alumno: vec){
+		            print(alumno);
+	            };
+                break;
+            }
+            case 2:{
+                Alumno alumno;
+                file.add(alumno);
+                break;
+            }
+            case 3:{
+                int pos;
+                cout <<"Ingrese la posicion para leer:"<<endl;
+                cin>>pos;
+                Alumno alumno1 = file.readRecord(pos);
+                cout<<"\n";
+                print(alumno1);
+                break;
+            }
+            case 4: break;                
+        }        
+    }while(opc != 4);
     
 	return 0;
 }
