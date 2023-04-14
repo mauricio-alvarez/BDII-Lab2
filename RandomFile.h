@@ -2,6 +2,7 @@
 #include<fstream>
 #include<cstdio>
 #include <map>
+
 using namespace std;
 
 struct Record
@@ -69,10 +70,6 @@ public:
           dataFile.close();
           
     }
-
-    /*
-    * Regresa el indice al disco
-    */
     void writeIndex(){
         ofstream indexFile(this->indexName, ios::binary);   
         for (auto& entry: index){
@@ -82,11 +79,9 @@ public:
         indexFile.close();
     }
 
-    /*
-    * Escribe el registro al final del archivo de datos. Se actualiza el indice. 
-    */
     void write_record(Record record) {
         fstream dataFile(this->fileName, ios::app | ios::binary);
+        
         long posFisica = dataFile.tellp();
 
         dataFile.write((char*)&record.nombre, sizeof(record.nombre));
@@ -96,11 +91,6 @@ public:
         this->index[record.getKey()] = posFisica;
         dataFile.close();
     }
-
-
-    /*
-    * Busca un registro que coincida con la key
-    */
     Record* search(string key) {
         Record* result = nullptr;
         // Inicializamos el iterador
@@ -125,21 +115,40 @@ public:
         return result;
     }
 
-    /*
-   * Muestra todos los registros de acuerdo como fueron insertados en el archivo de datos
-   */
     void scanAll() {
-       
+        cout<<"SCAN"<<endl;
+       ifstream dataFile(this->fileName,ios::ate | ios::binary);
+          if (!dataFile) {cout<< "No se pudo abrir el archivo\n";}
+          int registerSize = dataFile.tellg()/54;
+          dataFile.seekg(0,ios::beg);
+          Record auxiliarRecord;
+
+          for (int i = 0; i < registerSize; i++){
+               dataFile.read((char*)(&auxiliarRecord.nombre),sizeof(auxiliarRecord.nombre));
+               dataFile.read((char*)(&auxiliarRecord.carrera),sizeof(auxiliarRecord.carrera));
+               dataFile.read((char*)(&auxiliarRecord.ciclo),sizeof(int));
+               auxiliarRecord.showData();
+          }
+          dataFile.close();
     }
 
     /*
    * Muestra todos los registros de acuerdo a como estan ordenados en el indice
    */
     void scanAllByIndex() {
-       
+        cout<<"SCAN BY INDEX"<<endl;
+        ifstream dataFile(this->fileName,ios::ate | ios::binary);
+        if (!dataFile) {cout<< "No se pudo abrir el archivo\n";}
+
+        Record auxiliarRecord;
+        
+        for (auto it = index.begin(); it != index.end(); it++){
+            dataFile.seekg((*it).second, ios::beg);
+            dataFile.read((char*)(&auxiliarRecord.nombre),sizeof(auxiliarRecord.nombre));
+            dataFile.read((char*)(&auxiliarRecord.carrera),sizeof(auxiliarRecord.carrera));
+            dataFile.read((char*)(&auxiliarRecord.ciclo),sizeof(int));
+            auxiliarRecord.showData();
+        }
     }
 
 };
-
-
-
