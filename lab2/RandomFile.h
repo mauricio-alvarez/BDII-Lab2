@@ -24,6 +24,10 @@ struct Record
         cout << "\nCarrera: " << carrera;
         cout << "\nCiclo : " << ciclo;
     }    
+    
+    string getKey(){
+        return nombre;
+    }
 };
 
 class RandomFile {
@@ -39,7 +43,7 @@ public:
         this->indexName = _fileName + "_ind";
         readIndex();
     }
-    
+
     ~RandomFile(){
         writeIndex();
     }
@@ -49,6 +53,10 @@ public:
     */
     void readIndex()
     {
+        ifstream indexFile(this->indexName, ios::binary);
+        // for 0 -> final
+        //      leo 30 guardo en la primera entrada
+        //      leo sizeof(long), guardo en la segunda entrada
       
     }
 
@@ -56,7 +64,12 @@ public:
     * Regresa el indice al disco
     */
     void writeIndex(){
-        
+        ofstream indexFile(this->indexName, ios::binary);   
+        for (auto& entry: index){
+            indexFile.write(entry.first.c_str(), 30);
+            indexFile.write((char*)&entry.second, sizeof(long));
+        }
+        indexFile.close();
     }
 
     /*
@@ -77,7 +90,25 @@ public:
     */
     Record* search(string key) {
         Record* result = nullptr;
-                
+        // Inicializamos el iterador
+        map<string,long>::iterator it;
+        // Buscamos en el index
+        it= index.find(key);
+
+        if (it == index.end())
+            // No ha sido encontrado
+            return nullptr;
+        else {
+            // Guardamos la pos 
+            long ind = it->second;
+            // Abrimos el archivo
+            ifstream file(this->fileName, ios::binary);
+            // Nos posicionamos correctamente
+            file.seekg(ind);
+            // Guardamos los datos directamente pues es de tamaño fijo
+            file.read((char*)&result, sizeof(Record));
+        }
+
         return result;
     }
 
