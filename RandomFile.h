@@ -51,13 +51,23 @@ public:
     /*
     * leer el indice desde disco
     */
-    void readIndex()
-    {
-        ifstream indexFile(this->indexName, ios::binary);
-        // for 0 -> final
-        //      leo 30 guardo en la primera entrada
-        //      leo sizeof(long), guardo en la segunda entrada
-      
+    void readIndex(){
+          ifstream dataFile(this->fileName,ios::ate | ios::binary);
+          if (!dataFile) {cout<< "No se pudo abrir el archivo\n";}
+
+          int registerSize = dataFile.tellg()/54;
+          dataFile.seekg(0,ios::beg);
+          Record auxiliarRecord;
+
+          for (int i = 0; i < registerSize; i++){
+               dataFile.read((char*)(&auxiliarRecord.nombre),sizeof(auxiliarRecord.nombre));
+               dataFile.read((char*)(&auxiliarRecord.carrera),sizeof(auxiliarRecord.carrera));
+               dataFile.read((char*)(&auxiliarRecord.ciclo),sizeof(int));
+               this->index[auxiliarRecord.getKey()] = i*54;
+          }
+          
+          dataFile.close();
+          
     }
 
     /*
@@ -76,12 +86,15 @@ public:
     * Escribe el registro al final del archivo de datos. Se actualiza el indice. 
     */
     void write_record(Record record) {
-       ofstream dataFile;
-       dataFile.open(this->fileName, ios::app | ios::binary);
-       long posFisica = dataFile.tellp();
-       dataFile.write((char*)&record, sizeof(Record));
-       this->index[record.getKey()] = posFisica;
-       dataFile.close();
+        fstream dataFile(this->fileName, ios::app | ios::binary);
+        long posFisica = dataFile.tellp();
+
+        dataFile.write((char*)&record.nombre, sizeof(record.nombre));
+        dataFile.write((char*)&record.carrera, sizeof(record.carrera));
+        dataFile.write((char*)&record.ciclo, sizeof(int));
+
+        this->index[record.getKey()] = posFisica;
+        dataFile.close();
     }
 
 
