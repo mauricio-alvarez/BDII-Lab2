@@ -66,7 +66,6 @@ public:
                dataFile.read((char*)(&auxiliarRecord.ciclo),sizeof(int));
                this->index[auxiliarRecord.getKey()] = i*54;
           }
-          
           dataFile.close();
           
     }
@@ -97,21 +96,25 @@ public:
         map<string,long>::iterator it;
         // Buscamos en el index
         it= index.find(key);
-
-        if (it == index.end())
+        
+        if (it == index.end()){
             // No ha sido encontrado
             return nullptr;
-        else {
+        }else {
             // Guardamos la pos 
             long ind = it->second;
+            cout<<ind<<endl;
             // Abrimos el archivo
-            ifstream file(this->fileName, ios::binary);
+            ifstream file(this->fileName, ios::ate | ios::binary);
             // Nos posicionamos correctamente
+            file.seekg(0,ios::beg);
             file.seekg(ind);
+            cout<<file.tellg()<<endl;
             // Guardamos los datos directamente pues es de tamaño fijo
-            file.read((char*)&result, sizeof(Record));
+            result = new Record;
+            file.read(reinterpret_cast<char*>(result), sizeof(Record));
+            file.close();
         }
-
         return result;
     }
 
