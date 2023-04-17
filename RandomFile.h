@@ -62,8 +62,6 @@ public:
 
           for (int i = 0; i < registerSize; i++){
                dataFile.read((char*)(&auxiliarRecord.nombre),sizeof(auxiliarRecord.nombre));
-               dataFile.read((char*)(&auxiliarRecord.carrera),sizeof(auxiliarRecord.carrera));
-               dataFile.read((char*)(&auxiliarRecord.ciclo),sizeof(int));
                this->index[auxiliarRecord.getKey()] = i*54;
           }
           dataFile.close();
